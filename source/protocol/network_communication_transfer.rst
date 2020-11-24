@@ -5,9 +5,9 @@ DICOM网络传输
 概述
 ----
 
-DICOM采用C/S模型来描述网络传输：客户端（Client）连接到服务端（Server），然后使用服务端提供的各项服务（Services）。不同于传统网络连接，DICOM中的Server叫做Service Class Provider，Client叫叫做Service Class User。
+DICOM采用C/S模型来描述网络传输：客户端（Client）连接到服务端（Server），然后使用服务端提供的各项服务（Services）。不同于传统网络连接，DICOM中的Server叫做\ **Service Class Provider (SCP)**\ ，Client叫做\ **Service Class User (SCU)**\ 。
 
-想要建立DICOM连接（Association，传统OSI模型中叫做Connection），客户端会向服务端发送连接请求消息，该消息描述客户端此次连接所期望的DICOM服务及相关设置；随后服务端会查看客户端发送过来的请求，确认自己是否支持客户端请求的相关服务并给出反馈信息。
+想要建立DICOM连接（\ **Association**\ ，传统OSI模型中叫做Connection），客户端会向服务端发送连接请求消息，该消息描述客户端此次连接所期望的DICOM服务及相关设置；随后服务端会查看客户端发送过来的请求，确认自己是否支持客户端请求的相关服务并给出反馈信息。
 
 响应信息主要分为以下几类：
  
@@ -58,10 +58,11 @@ The parameters for A-ASSOCIATE Service:
 
 在请求A-ASSOCIATE Service时，有些参数是必需的，比较重要的参数有：
 
-* **Calling AE Title**：请求端实体名称
-* **Called AE Title**：被请求实体名称
-* **Presentation Contexts**：是一个服务清单（List of Services），用于描述客户端希望从服务端获得的各项服务。
-
+* **Calling AE Title**
+* **Called AE Title**
+* **Application Context**
+* **Presentation Contexts**
+* **User Information**
 
 A-RELEASE Service
 *****************
@@ -88,7 +89,7 @@ A-ABORT Service用于”粗暴的“断开DICOM连接。
 A-P-ABORT Service
 *****************
 
-A-P-ABORT Service由Service Provider使用，用来通知Service User：DICOM连接有问题，可能会造成数据丢失。
+A-P-ABORT Service由Service Provider使用来断开当前的DICOM连接。
 
 .. image:: images/Provider_Initiated_Abort.png
     :width: 640
@@ -114,7 +115,7 @@ The parameter for the P-DATA Service:
     :width: 640
     :alt: P-DATA Service Parameter
 
-对于P-DATA Service，其参数就是要传输的数据。
+对于P-DATA Service，其参数就是要传输的数据（DIMSE）。
 
 
 DICOM网络通讯
@@ -126,7 +127,7 @@ DICOM网络通讯
 请求连接
 ********
 
-客户端（SCU）和服务端（SCP）发送连接请求（A-ASSOCIATE Service），请求信息中需要包含一些必要的消息，比较重要的信息有：
+客户端（SCU）向服务端（SCP）发送连接请求（A-ASSOCIATE Service），请求信息中需要包含一些必要的消息，比较重要的信息有：
 
 * **Calling AE Title**：请求端实体名称
 * **Called AE Title**： 被请求实体名称
@@ -145,7 +146,7 @@ ACSE（Association Control Service Element），是在DICOM3.0中的第8部分�
 
 .. note::
 
-    上面介绍的Upper Layer Services是ACSE的一个子集，ACSE是一个标准的OSI协议。
+    ACSE是一个标准的OSI协议，上面介绍的Upper Layer Services是ACSE的一个子集。
 
 连接（Association）的建立是两个DICOM实体（AE）之间进行交互的第一步，AEs在建立的连接上进行数据编码格式、传输方式的协商。DICOM AEs利用ACSE-ASSOCIATION服务来建立连接，在ACSE-ASSOCIATION服务中主要用到的是Applicaiton Context、Presentation Context和User Information Items。ACSE服务主要有A-ASSOCIATE、A-RELEASE、A-ABORT、A-P-ABORT、P-DATA五类，对应的PDU有A-ASSOCIATE-RQ、A-ASSOCIATE-AC、A-ASSOCIATE-RJ、A-RELEASE-RQ、A-RELEASE-RP、A-ABORT、P-DATA-TF七种。
 
@@ -182,7 +183,6 @@ A single DICOM Application Context Name is defined for this version of this Stan
     DICOM rules apply such as using DIMSE commands like C-STORE and so on. 
 
 
-
 Presentation Contexts
 +++++++++++++++++++++
 
@@ -193,7 +193,7 @@ DICOM协议已经有20多年的历史，从1993年DICOM标准提出以来，新�
 
     因为大多数DICOM系统只支持DICOM标准中的部分服务，所以客户端和服务端之间需要有一个协商的过程，以确定客户端期望获得哪些服务，而服务端又支持哪些服务。
 
-鉴于以上原因，客户端会向服务端发送一系列长度小于128字节（总长度）的被称为\ **描述上下文（Presentation Context）**\ 的消息列表，每一个描述上下文代表一种客户端期望的服务。客户端用DICOM标识符来标识每种服务，即SOP Class UID（Service-Object Pair Class Unique Identifier）。在请求连接的上下文中，被发送的SOP Class 也被叫做\ **Abstract Syntax**\ （一定要与Transfer Syntaxes区分开来）。在传输SOP Class UID（即Abstract Syntax）的同时，会发送与该服务对应的数据部分的编码格式，即\ **Transfer Syntaxes**\ 。以乳腺检查的X光片为例，通常乳腺X光片很大，需要进行压缩。客户端在向服务端发送上下文信息时会提供给服务端一种乳腺X光片的压缩格式，例如JPEG2000，同时也会提供一种被大多数图像传输服务端接受的非压缩格式。如下图所示：
+鉴于以上原因，客户端会向服务端发送一系列被称为\ **描述上下文（Presentation Context）**\ 的消息列表，每一个描述上下文代表一种客户端期望的服务。客户端用DICOM标识符来标识每种服务，即SOP Class UID（Service-Object Pair Class Unique Identifier）。在请求连接的上下文中，被发送的SOP Class 也被叫做\ **Abstract Syntax**\ （一定要与Transfer Syntaxes区分开来）。在传输SOP Class UID（即Abstract Syntax）的同时，会发送与该服务对应的数据部分的编码格式，即\ **Transfer Syntaxes**\ 。以乳腺检查的X光片为例，通常乳腺X光片很大，需要进行压缩。客户端在向服务端发送上下文信息时会提供给服务端一种乳腺X光片的压缩格式，例如JPEG2000，同时也会提供一种被大多数图像传输服务端接受的非压缩格式。如下图所示：
 
 .. image:: images/Presentation_Contexts_Example.png
     :width: 640
@@ -333,7 +333,7 @@ Example:
     :width: 640
     :alt: A-RELEASE Response PDU
 
-PDU指的是DICOM协议中的传输的各种消息（包括ACSE和DIMSE）的片段，PDV专指DICOM Message被分割后的片段，属于P-DATA-TF类PDU的Variable Field部分。
+**PDU指的是DICOM协议中的传输的各种消息（包括ACSE和DIMSE）的片段，PDV专指DICOM Message被分割后的片段，属于P-DATA-TF类PDU的Variable Field部分。**
 
 DICOM Messages are encapsulated in P-DATA request primitives as the use data of Presentation Data Values (PDV). 
 A DICOM Message is fragmented in Command Fragments and Data Fragments, each placed in a PDV. 
@@ -419,9 +419,114 @@ Example - DIMSE Response Message：
     :alt: DIMSE Response Message
 
 
+验证通讯过程
+------------
+
+使用DCMTK开源库中提供的工具，来测试验证DICOM的通讯过程。
+
+选用的工具如下：
+
++--------------+---------------+
+| 服务端       | 客户端        |
++--------------+---------------+
+| ``wlmscpfs`` | ``findscu``   |
++--------------+---------------+
+
+另外，为了与DIMCOM3.0中对DICOM网络服务的各种结构（如DIMSE、PDU）和指令（A-ASSOCIATION、C-FIND）的详细介绍进行对比，将本地模拟的服务端与客户端的通讯数据进行抓取，将抓取的数据包存成pcap文件，然后利用Wireshark强大的统计分析功能进行直观的对比。
+
+
+worklist查询服务的通讯过程分析
+******************************
+
+.. note::
+
+    下载dcmtk的源码，在dcmtk/dcmwlm/data/路径下，有两个目录：wlistdb和wlistqry，其中存放的文件可以用来进行worklist查询服务测试。
+    如果将dcmtk源码编译安装，这两个目录的默认安装路径为：/usr/local/share/dcmtk/
+
+    wlistdb和wlistqry目录下的文件都是\ ``*.dump``\ 格式的，需要先将其转换为\ ``*.wl``\ 格式的，dcmtk有提供专门的命令行工具进行转换。
+    例如，将wlistdb/OFFIS/目录下的wklist1.dump文件转换为wklist1.wl，执行以下命令：\ ``dump2dcm -g wklist1.dump wklist1.wl``\ ，用类似的方法可以将其它的*.dump格式的文件也转换为*.wl文件。
+    具体的说明可以查看wlistdb/和wlistqry/目录下的README。
+
+
+* 启动本地回路抓包工具（Wireshark或tcpdump）
+* 启动worklist服务端程序
+
+.. code-block:: sh
+    :emphasize-lines: 1
+
+    wlmscpfs -d 104 -dfp wlistdb/ 2> worklist-server.txt
+
+* 启动worklist查询客户端程序
+
+.. code-block:: sh
+    :emphasize-lines: 1
+
+    findscu -d 127.0.0.1 104 wlistqry.wl -aec OFFS 2> worklist-client.txt
+
+
+以上两行命令的大概过程是：客户端根据指定的查询文件向服务器发起查询操作，服务器接受到客户端的查询请求后，在指定的路径下查询数据库文件，之后将结果返回给客户端。
+
+.. image:: images/DICOM_Worklist_Communication_Example.png
+    :width: 640
+    :alt: DICOM Worklist Communication
+
+然后再对Wireshark抓取的数据进行分析：
+
+* 整个通讯过程：
+
+.. image:: images/DICOM_Worklist_Wireshark.png
+    :width: 640
+
+* A-ASSOCIATE Request:
+
+.. image:: images/A-ASSOCIATE_Request_Wireshark.png
+    :width: 640
+
+* A-ASSOCIATE Response:
+
+.. image:: images/A-ASSOCIATE_Response_Wireshark.png
+    :width: 640
+
+* P-DATA Request Command Set:
+
+.. image:: images/P-DATA_Request_CommandSet_Wireshark.png
+    :width: 640
+
+* P-DATA Request Data Set:
+
+.. image:: images/P-DATA_Request_DataSet_Wireshark.png
+    :width: 640
+
+* P-DATA Response Command Set:
+
+.. image:: images/P-DATA_Response_CommandSet_Wireshark.png
+    :width: 640
+
+* P-DATA Response Data Set:
+
+.. image:: images/P-DATA_Response_DataSet_Wireshark.png
+    :width: 640
+
+* P-DATA Response End:
+
+.. image:: images/P-DATA_Response_Status_Wireshark.png
+    :width: 640
+
+* A-RELEASE Request:
+
+.. image:: images/A-RELEASE_Request_Wireshark.png
+    :width: 640
+
+* A-RELEASE Response:
+
+.. image:: images/A-RELEASE_Response_Wireshark.png
+    :width: 640
+
 ******
 
 参考文章：
 
 `DICOM医学图像处理：DICOM网络传输 <https://blog.csdn.net/zssureqh/article/details/41016091>`_
+
+`DICOM医学图像处理：全面分析DICOM3.0标准中的通讯服务模块 <https://blog.csdn.net/zssureqh/article/details/39098621>`_
 

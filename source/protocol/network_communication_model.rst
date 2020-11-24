@@ -13,26 +13,31 @@ DICOM协议更多的是关于医疗行业各种服务及相关流程的约定，
 DICOM网络通信，该部分是日常患者到医院就诊等具体流程的抽象，是DICOM标准的核心。
 
 
-DICOM网络服务是建立的传统OSI七层模型之上的端到端的通讯服务，包括服务端和客户端。
+DICOM网络服务是建立在传统OSI七层模型之上的端到端的通讯服务，包括服务端和客户端。
 其基本的通讯服务模型如下图所示：
 
-.. image:: images/communication_model_1.jpeg
+.. image:: images/DICOM_Communication_Model_1.jpeg
+    :width: 640
 
-* DICOM协议层：创建DICOM连接，并在此连接上实现数据的收发（这里只是进行数据的收发，而不关心数据的含义）。
-* DIMSE协议层：定义了消息的格式和含义。
+.. image:: images/DICOM_Communication_Model_2.jpeg
+    :width: 640
 
-.. image:: images/communication_model_2.jpeg
+* DICOM协议层：创建DICOM连接，并在此连接上收发数据；
+* DIMSE协议层：定义了消息的格式和含义（在DICOM连接上收发的消息）。
 
-与传统的OSI七层模型对比一下，可以看出DICOM 3.0标准中所描述的DICOM网络通讯服务所包含的并非是OSI七层中简单的某一层，而是对从TCP/IP层向上的各层都分别进行了详细的描述和定义。
+与传统的OSI七层模型对比一下，可以看出DICOM3.0标准中所描述的DICOM网络通讯服务所包含的并非是OSI七层中简单的某一层，而是对从TCP/IP层向上的各层都分别进行了详细的描述和定义。
 
 
-DICOM 3.0标准对DICOM网络通讯的描述
-----------------------------------
+DICOM3.0标准对DICOM网络通讯的描述
+---------------------------------
 
 下面是DICOM 3.0标准中的几个附图，首先从整体上对DICOM网络通讯有一个认识：
 
-.. image:: images/communication_model_3.jpeg 
-.. image:: images/communication_model_4.jpeg
+.. image:: images/DICOM_Communication_Model_3.jpeg
+    :width: 640
+ 
+.. image:: images/DICOM_Communication_Model_4.jpeg
+    :width: 640
 
 可以看出，DICOM通讯模型是建立在TCP/IP层之上的，最底层的是DICOM Upper Layer Protocol，该部分主要负责与TCP相对接，在此之上就是DICOM3.0标准给出的DICOM通讯模型。
 与OSI七层模型对比可知，DICOM通讯模型涵盖了会话层（Session）、表示层（Presentation）和应用层（Application）。
@@ -41,9 +46,12 @@ DICOM 3.0标准对DICOM网络通讯的描述
 
 下面给出一个更全面的结构示意图：
 
-.. image:: images/communication_model_5.jpeg
+.. image:: images/DICOM_Communication_Model_5.jpeg
+    :width: 640
+
 
 ******
+
 
 参考文章：
 
