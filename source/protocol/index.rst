@@ -5,6 +5,7 @@ DICOM中的协议部分
     :maxdepth: 1
 
     concepts_summary
+    DICOM_Information_Model
     data_structures_and_encoding
     data_dictionary
     message_exchange
